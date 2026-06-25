@@ -47,6 +47,7 @@ services:
     - ${SVR_MCP_PORT}:9382
     volumes:
     - ragflow_logs:/ragflow/logs
+    - /opt/ragflow/server.py:/ragflow/mcp/server/server.py
     environment:
     - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     - MINIO_PASSWORD=${MINIO_PASSWORD}
