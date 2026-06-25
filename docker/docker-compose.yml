@@ -8,11 +8,14 @@
 #   - self-hosted MCP server enabled on :9382  — Streamable HTTP at /mcp
 #   - secrets come from Portainer stack env vars (MYSQL_PASSWORD, MINIO_PASSWORD,
 #     REDIS_PASSWORD, MCP_HOST_API_KEY), not from this repo
+#   - server's service_conf.yaml.template / entrypoint.sh mounts dropped (image
+#     ships working defaults); mysql init.sql replaced with MYSQL_DATABASE env
 #
 # This REPLACES the upstream docker/docker-compose.yml. You can DELETE
 # docker/docker-compose-base.yml from your fork — it is no longer used.
-# Keep the other docker/ files (service_conf.yaml.template, entrypoint.sh,
-# init.sql, infinity_conf.toml) — they are still mounted below.
+# The ONLY supporting file this stack needs next to it is `infinity_conf.toml`
+# (bind-mounted into the infinity service). Make sure that file is present and
+# non-empty in the same directory as this compose file.
 # =============================================================================
 
 services:
@@ -43,9 +46,7 @@ services:
     - ${ADMIN_SVR_HTTP_PORT}:9381
     - ${SVR_MCP_PORT}:9382
     volumes:
-    - ./ragflow-logs:/ragflow/logs
-    - ./service_conf.yaml.template:/ragflow/conf/service_conf.yaml.template
-    - ./entrypoint.sh:/ragflow/entrypoint.sh
+    - ragflow_logs:/ragflow/logs
     environment:
     - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     - MINIO_PASSWORD=${MINIO_PASSWORD}
@@ -90,11 +91,11 @@ services:
     env_file: .env
     environment:
     - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+    - MYSQL_DATABASE=${MYSQL_DBNAME}
     command: --max_connections=1000 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password
-      --tls_version="TLSv1.2,TLSv1.3" --init-file /data/application/init.sql --binlog_expire_logs_seconds=604800
+      --tls_version="TLSv1.2,TLSv1.3" --binlog_expire_logs_seconds=604800
     volumes:
     - mysql_data:/var/lib/mysql
-    - ./init.sql:/data/application/init.sql
     networks:
     - ragflow
     healthcheck:
@@ -160,6 +161,8 @@ services:
       timeout: 10s
       retries: 120
 volumes:
+  ragflow_logs:
+    driver: local
   infinity_data:
     driver: local
   mysql_data:
