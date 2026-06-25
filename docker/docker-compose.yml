@@ -39,6 +39,14 @@ services:
       # - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./service_conf.yaml.template:/ragflow/conf/service_conf.yaml.template
       - ./entrypoint.sh:/ragflow/entrypoint.sh
+    # Secrets are supplied as Portainer stack environment variables, not via the
+    # .env file. These explicit entries interpolate the Portainer values into the
+    # server container. `environment:` takes precedence over `env_file:`, so the
+    # blank placeholders in .env are overridden here.
+    environment:
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MINIO_PASSWORD=${MINIO_PASSWORD}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
     env_file: .env
     networks:
       ragflow: {}            # internal: reaches mysql / minio / redis / infinity
