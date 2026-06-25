@@ -1,6 +1,6 @@
 [general]
 version                  = "0.7.0"
-time_zone                = "utc-8"
+time_zone                = "utc-7"
 
 [network]
 server_address           = "0.0.0.0"
